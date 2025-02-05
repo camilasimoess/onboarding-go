@@ -2,7 +2,7 @@ package repo
 
 import (
 	"errors"
-	"mine/internal/model"
+	"onboarding-go/internal/model"
 )
 
 type UserRepository struct {

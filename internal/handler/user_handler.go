@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"mine/internal/model"
-	"mine/internal/service"
 	"net/http"
+	"onboarding-go/internal/model"
+	"onboarding-go/internal/service"
 	"strings"
 )
 

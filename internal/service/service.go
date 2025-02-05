@@ -1,8 +1,8 @@
 package service
 
 import (
-	"mine/internal/model"
-	"mine/internal/repo"
+	"onboarding-go/internal/model"
+	"onboarding-go/internal/repo"
 )
 
 type UserService struct {

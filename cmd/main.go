@@ -1,10 +1,10 @@
 package main
 
 import (
-	"mine/internal/handler"
-	"mine/internal/repo"
-	"mine/internal/service"
 	"net/http"
+	"onboarding-go/internal/handler"
+	"onboarding-go/internal/repo"
+	"onboarding-go/internal/service"
 )
 
 func main() {
