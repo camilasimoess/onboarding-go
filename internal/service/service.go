@@ -17,10 +17,6 @@ func (s *UserService) FindUserByID(id string) (model.User, error) {
 	return s.UserRepository.FindByID(id)
 }
 
-func (s *UserService) SaveUser(user model.User) error {
+func (s *UserService) SaveUser(user *model.User) error {
 	return s.UserRepository.Save(user)
-}
-
-func (s *UserService) UpdateUser(user model.User) error {
-	return s.UserRepository.Update(user)
 }
