@@ -3,36 +3,54 @@ package repo
 import (
 	"context"
 	"errors"
+	"github.com/camilasimoess/onboarding-go/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"onboarding-go/internal/model"
 )
 
-type UserRepository struct {
+type UserRepository interface {
+	Save(user *model.User) error
+	FindByID(id string) (*model.User, error)
+	FindByNameAndLastName(firstName, lastName string) (*model.User, error)
+}
+
+type MongoUserRepository struct {
 	collection *mongo.Collection
 }
 
-func NewUserRepository(database *mongo.Database, dbName, collectionName string) *UserRepository {
+func NewUserRepository(database *mongo.Database, collectionName string) *MongoUserRepository {
 	collection := database.Collection(collectionName)
-	return &UserRepository{collection: collection}
+	return &MongoUserRepository{collection: collection}
 }
 
-func (r *UserRepository) Save(user *model.User) error {
-	if user.FirstName == "" || user.LastName == "" || user.Email == "" {
-		return errors.New("missing required fields")
-	}
-	_, err := r.collection.InsertOne(nil, user)
+func (r *MongoUserRepository) Save(user *model.User) error {
+	user.ID = primitive.NewObjectID().Hex()
+	_, err := r.collection.InsertOne(context.Background(), user)
 	return err
 }
 
-func (r *UserRepository) FindByID(id string) (model.User, error) {
+func (r *MongoUserRepository) FindByID(id string) (*model.User, error) {
 	var user model.User
-	err := r.collection.FindOne(context.Background(), bson.M{"id": id}).Decode(&user)
+	err := r.collection.FindOne(context.Background(), bson.M{"_id": id}).Decode(&user)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return model.User{}, errors.New("user not found")
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil
 		}
-		return model.User{}, err
+		return nil, err
 	}
-	return user, nil
+	return &user, nil
+}
+
+func (r *MongoUserRepository) FindByNameAndLastName(firstName, lastName string) (*model.User, error) {
+	var user model.User
+	filter := bson.M{"firstname": firstName, "lastname": lastName}
+	err := r.collection.FindOne(context.Background(), filter).Decode(&user)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
 }

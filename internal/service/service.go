@@ -1,22 +1,25 @@
 package service
 
 import (
-	"onboarding-go/internal/model"
-	"onboarding-go/internal/repo"
+	"github.com/camilasimoess/onboarding-go/internal/model"
+	"github.com/camilasimoess/onboarding-go/internal/repo"
 )
 
 type UserService struct {
-	repo.UserRepository
+	repo repo.UserRepository
 }
 
 func NewUserService(repo repo.UserRepository) *UserService {
-	return &UserService{UserRepository: repo}
+	return &UserService{repo: repo}
 }
 
-func (s *UserService) FindUserByID(id string) (model.User, error) {
-	return s.UserRepository.FindByID(id)
+func (s *UserService) CreateUser(user *model.User) error {
+	if err := s.validateUser(*user); err != nil {
+		return err
+	}
+	return s.repo.Save(user)
 }
 
-func (s *UserService) SaveUser(user *model.User) error {
-	return s.UserRepository.Save(user)
+func (s *UserService) GetUser(id string) (*model.User, error) {
+	return s.repo.FindByID(id)
 }
