@@ -1,0 +1,10 @@
+with-expecter: true
+inpackage: true
+dir: "{{.InterfaceDirRelative}}"
+mockname: "Mockery_{{.InterfaceName}}"
+outpkg: "{{.InterfaceDirRelative}}"
+filename: "mock_{{.InterfaceName}}.go"
+packages:
+  github.com/camilasimoess/onboarding-go/internal/repo:
+    interfaces:
+      UserRepository:
