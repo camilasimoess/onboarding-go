@@ -36,8 +36,6 @@ func Test_CreateUser(t *testing.T) {
 			Age:       17,
 		}
 
-		mockRepo.EXPECT().FindByNameAndLastName(user.FirstName, user.LastName).Return(nil, nil)
-
 		err := userService.CreateUser(&user)
 		assert.Equal(t, ErrorInvalidAge, err)
 	})
@@ -52,8 +50,6 @@ func Test_CreateUser(t *testing.T) {
 			Age:       25,
 		}
 
-		mockRepo.EXPECT().FindByNameAndLastName(user.FirstName, user.LastName).Return(nil, nil)
-
 		err := userService.CreateUser(&user)
 		assert.Equal(t, ErrorInvalidEmail, err)
 	})
@@ -67,8 +63,6 @@ func Test_CreateUser(t *testing.T) {
 			Email:     "camila.simoes@test.com",
 			Age:       25,
 		}
-
-		mockRepo.EXPECT().FindByNameAndLastName(user.FirstName, user.LastName).Return(nil, nil)
 
 		err := userService.CreateUser(&user)
 		assert.Equal(t, ErrorMissingRequiredFields, err)

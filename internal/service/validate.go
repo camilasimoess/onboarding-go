@@ -21,14 +21,6 @@ func (e ValidationError) Error() string {
 }
 
 func (s *UserService) validateUser(user model.User) error {
-	existingUser, err := s.repo.FindByNameAndLastName(user.FirstName, user.LastName)
-	if err != nil {
-		return err
-	}
-	if existingUser != nil {
-		return ErrorUserAlreadyExists
-	}
-
 	if user.FirstName == "" || user.LastName == "" || user.Email == "" {
 		return ErrorMissingRequiredFields
 	}
@@ -41,6 +33,14 @@ func (s *UserService) validateUser(user model.User) error {
 
 	if user.Age < 18 {
 		return ErrorInvalidAge
+	}
+
+	existingUser, err := s.repo.FindByNameAndLastName(user.FirstName, user.LastName)
+	if err != nil {
+		return err
+	}
+	if existingUser != nil {
+		return ErrorUserAlreadyExists
 	}
 	return nil
 }
