@@ -20,6 +20,19 @@ func NewUserHandler(service *service.UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
+func validateRequest(user model.User) error {
+	if user.FirstName == "" || user.LastName == "" || user.Email == "" {
+		return errors.New("missing required fields")
+	}
+
+	emailRegex := `^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
+	emailR := regexp.MustCompile(emailRegex)
+	if !emailR.MatchString(user.Email) {
+		return errors.New("invalid email")
+	}
+	return nil
+}
+
 func (h *UserHandler) CreateUser(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	slog.Info("saving user")
 	var user model.User
@@ -29,15 +42,9 @@ func (h *UserHandler) CreateUser(ctx context.Context, w http.ResponseWriter, r *
 		return
 	}
 
-	if user.FirstName == "" || user.LastName == "" || user.Email == "" {
-		http.Error(w, "missing required fields", http.StatusBadRequest)
-		return
-	}
-
-	emailRegex := `^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
-	emailR := regexp.MustCompile(emailRegex)
-	if !emailR.MatchString(user.Email) {
-		http.Error(w, "invalid email", http.StatusBadRequest)
+	err = validateRequest(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

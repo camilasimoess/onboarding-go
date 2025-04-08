@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"github.com/camilasimoess/onboarding-go/internal/model"
 	"github.com/camilasimoess/onboarding-go/internal/repo"
@@ -9,6 +10,7 @@ import (
 )
 
 func Test_CreateUser(t *testing.T) {
+	ctx := context.Background()
 
 	t.Run("Positive - Valid User", func(t *testing.T) {
 		mockRepo := repo.NewMockery_UserRepository(t)
@@ -19,10 +21,10 @@ func Test_CreateUser(t *testing.T) {
 			Email:     "camila.simoes@test.com",
 			Age:       25,
 		}
-		mockRepo.EXPECT().FindByNameAndLastName(user.FirstName, user.LastName).Return(nil, nil)
-		mockRepo.EXPECT().Save(&user).Return(nil)
+		mockRepo.EXPECT().FindByNameAndLastName(ctx, user.FirstName, user.LastName).Return(nil, nil)
+		mockRepo.EXPECT().Save(ctx, &user).Return(nil)
 
-		err := userService.CreateUser(&user)
+		err := userService.CreateUser(ctx, &user)
 		assert.Nil(t, err)
 	})
 
@@ -36,36 +38,8 @@ func Test_CreateUser(t *testing.T) {
 			Age:       17,
 		}
 
-		err := userService.CreateUser(&user)
+		err := userService.CreateUser(ctx, &user)
 		assert.Equal(t, ErrorInvalidAge, err)
-	})
-
-	t.Run("Negative - Invalid Email", func(t *testing.T) {
-		mockRepo := repo.NewMockery_UserRepository(t)
-		userService := NewUserService(mockRepo)
-		user := model.User{
-			FirstName: "Camila",
-			LastName:  "Simoes",
-			Email:     "camila.simoes",
-			Age:       25,
-		}
-
-		err := userService.CreateUser(&user)
-		assert.Equal(t, ErrorInvalidEmail, err)
-	})
-
-	t.Run("Negative - Missing Required Fields", func(t *testing.T) {
-		mockRepo := repo.NewMockery_UserRepository(t)
-		userService := NewUserService(mockRepo)
-		user := model.User{
-			FirstName: "",
-			LastName:  "Simoes",
-			Email:     "camila.simoes@test.com",
-			Age:       25,
-		}
-
-		err := userService.CreateUser(&user)
-		assert.Equal(t, ErrorMissingRequiredFields, err)
 	})
 
 	t.Run("Negative - User Already Exists", func(t *testing.T) {
@@ -85,14 +59,15 @@ func Test_CreateUser(t *testing.T) {
 			Email:     "camila.simoes@test.com",
 			Age:       25,
 		}
-		mockRepo.EXPECT().FindByNameAndLastName(user.FirstName, user.LastName).Return(&existingUser, nil)
+		mockRepo.EXPECT().FindByNameAndLastName(ctx, user.FirstName, user.LastName).Return(&existingUser, nil)
 
-		err := userService.CreateUser(&user)
+		err := userService.CreateUser(ctx, &user)
 		assert.Equal(t, ErrorUserAlreadyExists, err)
 	})
 }
 
 func Test_FindByID(t *testing.T) {
+	ctx := context.Background()
 	mockRepo := repo.NewMockery_UserRepository(t)
 
 	t.Run("Positive - User Found", func(t *testing.T) {
@@ -104,9 +79,9 @@ func Test_FindByID(t *testing.T) {
 			Age:       25,
 		}
 
-		mockRepo.EXPECT().FindByID(expectedUser.ID).Return(expectedUser, nil)
+		mockRepo.EXPECT().FindByID(ctx, expectedUser.ID).Return(expectedUser, nil)
 
-		user, err := mockRepo.FindByID(expectedUser.ID)
+		user, err := mockRepo.FindByID(ctx, expectedUser.ID)
 		assert.Nil(t, err)
 		assert.Equal(t, expectedUser, user)
 	})
@@ -114,9 +89,9 @@ func Test_FindByID(t *testing.T) {
 	t.Run("Negative - User Not Found", func(t *testing.T) {
 		nonExistentID := "non existent id"
 
-		mockRepo.EXPECT().FindByID(nonExistentID).Return(nil, nil)
+		mockRepo.EXPECT().FindByID(ctx, nonExistentID).Return(nil, nil)
 
-		user, err := mockRepo.FindByID(nonExistentID)
+		user, err := mockRepo.FindByID(ctx, nonExistentID)
 		assert.Nil(t, user)
 		assert.Nil(t, err)
 	})
@@ -125,9 +100,9 @@ func Test_FindByID(t *testing.T) {
 		errorID := "error id"
 		expectedError := errors.New("any some error")
 
-		mockRepo.EXPECT().FindByID(errorID).Return(nil, expectedError)
+		mockRepo.EXPECT().FindByID(ctx, errorID).Return(nil, expectedError)
 
-		user, err := mockRepo.FindByID(errorID)
+		user, err := mockRepo.FindByID(ctx, errorID)
 		assert.Nil(t, user)
 		assert.Equal(t, expectedError, err)
 	})
