@@ -6,10 +6,10 @@ import (
 )
 
 var (
-	ErrorInvalidAge            = ValidationError{Message: "user must be at least 18 years old"}
-	ErrorInvalidEmail          = ValidationError{Message: "invalid email"}
-	ErrorMissingRequiredFields = ValidationError{Message: "missing required fields"}
-	ErrorUserAlreadyExists     = ValidationError{Message: "user already exists"}
+	ErrorInvalidAge            = &ValidationError{Message: "user must be at least 18 years old"}
+	ErrorInvalidEmail          = &ValidationError{Message: "invalid email"}
+	ErrorMissingRequiredFields = &ValidationError{Message: "missing required fields"}
+	ErrorUserAlreadyExists     = &ValidationError{Message: "user already exists"}
 )
 
 type ValidationError struct {
