@@ -1,8 +1,8 @@
 package service
 
 import (
+	"context"
 	"github.com/camilasimoess/onboarding-go/internal/model"
-	"regexp"
 )
 
 var (
@@ -20,22 +20,12 @@ func (e ValidationError) Error() string {
 	return e.Message
 }
 
-func (s *UserService) validateUser(user model.User) error {
-	if user.FirstName == "" || user.LastName == "" || user.Email == "" {
-		return ErrorMissingRequiredFields
-	}
-
-	emailRegex := `^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
-	emailR := regexp.MustCompile(emailRegex)
-	if !emailR.MatchString(user.Email) {
-		return ErrorInvalidEmail
-	}
-
+func (s *UserService) validateUser(ctx context.Context, user model.User) error {
 	if user.Age < 18 {
 		return ErrorInvalidAge
 	}
 
-	existingUser, err := s.repo.FindByNameAndLastName(user.FirstName, user.LastName)
+	existingUser, err := s.repo.FindByNameAndLastName(ctx, user.FirstName, user.LastName)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"github.com/camilasimoess/onboarding-go/internal/service"
 	"log/slog"
 	"net/http"
+	"regexp"
 )
 
 type UserHandler struct {
@@ -18,7 +20,7 @@ func NewUserHandler(service *service.UserService) *UserHandler {
 	return &UserHandler{service: service}
 }
 
-func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CreateUser(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	slog.Info("saving user")
 	var user model.User
 	err := json.NewDecoder(r.Body).Decode(&user)
@@ -26,7 +28,20 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = h.service.CreateUser(&user)
+
+	if user.FirstName == "" || user.LastName == "" || user.Email == "" {
+		http.Error(w, "missing required fields", http.StatusBadRequest)
+		return
+	}
+
+	emailRegex := `^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
+	emailR := regexp.MustCompile(emailRegex)
+	if !emailR.MatchString(user.Email) {
+		http.Error(w, "invalid email", http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.CreateUser(ctx, &user)
 	if err != nil {
 		var validationError *service.ValidationError
 		if errors.As(err, &validationError) {
@@ -40,10 +55,10 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetUser(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	slog.Info(fmt.Sprintf("finding user with id: %s", id))
-	user, err := h.service.GetUser(id)
+	user, err := h.service.GetUser(ctx, id)
 	if err != nil {
 		http.Error(w, "", http.StatusInternalServerError)
 		return
